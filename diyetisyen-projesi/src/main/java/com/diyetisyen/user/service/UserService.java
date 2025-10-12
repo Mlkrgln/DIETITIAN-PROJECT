@@ -4,6 +4,9 @@ import com.diyetisyen.user.entity.User;
 import com.diyetisyen.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -11,7 +14,7 @@ import java.util.Set;
 
 @Service
 @Transactional
-public class UserService {
+public class UserService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
@@ -43,4 +46,12 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+
+    // loadUserByUsername → Spring Security login sırasında çağrılır.
+    //DB’den kullanıcı yoksa UsernameNotFoundException fırlatır.
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    }
 }
