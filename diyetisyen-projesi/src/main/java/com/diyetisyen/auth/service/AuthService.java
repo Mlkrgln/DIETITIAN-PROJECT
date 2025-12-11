@@ -1,50 +1,67 @@
 package com.diyetisyen.auth.service;
 
-import com.diyetisyen.auth.model.request.AuthRequest;
-import com.diyetisyen.auth.model.response.AuthResponse;
+import com.diyetisyen.auth.dto.AuthResponse;
+import com.diyetisyen.auth.dto.LoginRequest;
+import com.diyetisyen.auth.dto.RegisterRequest;
+import com.diyetisyen.user.entity.Role;
 import com.diyetisyen.user.entity.User;
-import com.diyetisyen.user.repository.UserRepository;
-import com.diyetisyen.user.model.Role;
+import com.diyetisyen.user.service.RoleService;
+import com.diyetisyen.user.service.UserService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
+@Service
 public class AuthService {
-    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
-
-        this.userRepository = userRepository;
+    public AuthService(AuthenticationManager authenticationManager,
+                       UserService userService,
+                       RoleService roleService,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
+        this.userService = userService;
+        this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
 
-    public AuthResponse login(AuthRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
-
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Şifre yanlış");
-        }
-
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRoles());
+    public AuthResponse login(LoginRequest req) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
+        );
+        var user = (User) userService.loadUserByUsername(req.getUsername());
+        Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        String token = jwtUtil.generateToken(user.getUsername(), roles);
         return new AuthResponse(token);
     }
 
-    public AuthResponse register(AuthRequest request, Role role) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Kullanıcı zaten mevcut");
-        }
+    public AuthResponse register(RegisterRequest req, String requestedRoleName) {
+        if (userService.existsByUsername(req.getUsername())) throw new RuntimeException("Username exists");
+        if (userService.existsByEmail(req.getEmail())) throw new RuntimeException("Email exists");
+
+        Role role = roleService.findByName(requestedRoleName)
+                .orElseGet(() -> roleService.saveRole(Role.builder().name(requestedRoleName).build()));
 
         User user = User.builder()
-                .username(request.getUsername())
-                .password(request.getPassword())
-                .email(request.getUsername() + "@example.com")
+                .username(req.getUsername())
+                .email(req.getEmail())
+                .password(passwordEncoder.encode(req.getPassword()))
                 .roles(Set.of(role))
                 .build();
 
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRoles());
+        userService.save(user);
+        Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        String token = jwtUtil.generateToken(user.getUsername(), roles);
         return new AuthResponse(token);
     }
 }

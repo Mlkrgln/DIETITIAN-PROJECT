@@ -2,33 +2,17 @@ package com.diyetisyen.user.service;
 
 import com.diyetisyen.user.entity.Role;
 import com.diyetisyen.user.repository.RoleRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
-@Transactional
 public class RoleService {
+    private final RoleRepository roleRepository;
+    public RoleService(RoleRepository roleRepository) { this.roleRepository = roleRepository; }
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    public Optional<Role> findByName(String name) {
-        return roleRepository.findByName(name);
-    }
-
-    public Role saveRole(Role role) {
-        return roleRepository.save(role);
-    }
-
-    public Set<Role> findAllRoles() {
-        return Set.copyOf(roleRepository.findAll());
-    }
-
-    public void deleteRole(Long roleId) {
-        roleRepository.deleteById(roleId);
-    }
+    public Role saveRole(Role r) { return roleRepository.save(r); }
+    public Optional<Role> findByName(String name) { return roleRepository.findByName(name); }
+    public List<Role> findAll() { return roleRepository.findAll(); }
 }

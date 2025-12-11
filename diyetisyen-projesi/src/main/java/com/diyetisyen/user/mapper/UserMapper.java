@@ -1,39 +1,21 @@
 package com.diyetisyen.user.mapper;
 
+import com.diyetisyen.user.dto.UserDto;
+import com.diyetisyen.user.dto.RoleDto;
 import com.diyetisyen.user.entity.User;
-import com.diyetisyen.user.model.UserDto;
-import org.springframework.stereotype.Component;
 
-@Component
+import java.util.stream.Collectors;
+
 public class UserMapper {
-
-    public UserDto toDto(User user) {
-        if (user == null) {
-            return null;
+    public static UserDto toDto(User u) {
+        if (u == null) return null;
+        UserDto d = new UserDto();
+        d.setId(u.getId());
+        d.setUsername(u.getUsername());
+        d.setEmail(u.getEmail());
+        if (u.getRoles() != null) {
+            d.setRoles(u.getRoles().stream().map(RoleMapper::toDto).collect(Collectors.toSet()));
         }
-
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUsername());
-//        dto.setRole(user.getRole());
-        // başka alanlar varsa onları da ekle
-
-        return dto;
-    }
-
-    public User toEntity(UserDto dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        User user = new User();
-        user.setId(dto.getId());
-        user.setEmail(dto.getEmail());
-        user.setUsername(dto.getUsername());
-//        user.setRole(dto.getRole());
-        // varsa diğer alanlar
-
-        return user;
+        return d;
     }
 }

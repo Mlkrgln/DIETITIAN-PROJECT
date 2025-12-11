@@ -1,6 +1,7 @@
 package com.diyetisyen.customer.service;
 
-import com.diyetisyen.customer.model.Customer;
+
+import com.diyetisyen.customer.entity.Customer;
 import com.diyetisyen.customer.repository.CustomerRepository;
 
 import java.util.List;

@@ -3,70 +3,68 @@ package com.diyetisyen.common.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // DTO içi @Valid doğrulama hatası
+    // DTO içi @Valid hatası
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
-        List<String> validationErrors = new ArrayList<>();
-
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            validationErrors.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
-        }
-
-        ApiError apiError = new ApiError(
-                HttpStatus.BAD_REQUEST.value(),
-                "Geçersiz istek verisi.",
-                validationErrors
-        );
-
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
-
-    // Custom not found exception
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException ex) {
-        ApiError error = new ApiError(
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
-                List.of("Kullanıcı bulunamadı.")
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
-    // Path parametre doğrulama hatası
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex) {
-        List<String> errors = ex.getConstraintViolations()
+    public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
+        var errors = ex.getBindingResult().getFieldErrors()
                 .stream()
-                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                .toList();
+                .collect(
+                        java.util.stream.Collectors.toMap(
+                                field -> field.getField(),
+                                field -> field.getDefaultMessage(),
+                                (a, b) -> a
+                        )
+                );
 
-        ApiError error = new ApiError(
-                HttpStatus.BAD_REQUEST.value(),
-                "Geçersiz parametre.",
-                errors
+        return ResponseEntity.badRequest().body(
+                Map.of(
+                        "status", 400,
+                        "message", "Geçersiz istek verisi.",
+                        "errors", errors
+                )
         );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // Tüm diğer exception'lar
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(Exception ex) {
-        ApiError error = new ApiError(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Sunucuda beklenmeyen bir hata oluştu.",
-                List.of(ex.getMessage())
+    // Parametre doğrulama hatası
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex) {
+        var errors = ex.getConstraintViolations()
+                .stream()
+                .collect(
+                        java.util.stream.Collectors.toMap(
+                                v -> v.getPropertyPath().toString(),
+                                v -> v.getMessage(),
+                                (a, b) -> a
+                        )
+                );
+
+        return ResponseEntity.badRequest().body(
+                Map.of(
+                        "status", 400,
+                        "message", "Geçersiz parametre.",
+                        "errors", errors
+                )
         );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Diğer tüm hatalar
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(Exception ex) {
+        return ResponseEntity.internalServerError().body(
+                Map.of(
+                        "status", 500,
+                        "message", "Sunucuda beklenmeyen bir hata oluştu.",
+                        "error", ex.getMessage()
+                )
+        );
     }
 }

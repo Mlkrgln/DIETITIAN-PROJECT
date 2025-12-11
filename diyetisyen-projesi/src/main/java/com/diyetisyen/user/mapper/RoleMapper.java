@@ -1,18 +1,14 @@
 package com.diyetisyen.user.mapper;
 
+import com.diyetisyen.user.dto.RoleDto;
 import com.diyetisyen.user.entity.Role;
-import com.diyetisyen.user.model.RoleDto;
 
 public class RoleMapper {
-
-    public static RoleDto toDto(Role role) {
-        return new RoleDto(role.getId(), role.getName());
-    }
-
-    public static Role toEntity(RoleDto dto) {
-        Role role = new Role();
-        role.setId(dto.getId());
-        role.setName(dto.getName());
-        return role;
+    public static RoleDto toDto(Role r) {
+        if (r == null) return null;
+        RoleDto d = new RoleDto();
+        d.setId(r.getId());
+        d.setName(r.getName());
+        return d;
     }
 }

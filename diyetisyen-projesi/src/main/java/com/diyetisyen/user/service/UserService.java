@@ -2,56 +2,52 @@ package com.diyetisyen.user.service;
 
 import com.diyetisyen.user.entity.User;
 import com.diyetisyen.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @Transactional
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
+    // --- Genel CRUD ve Sorgulama Metotları ---
 
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
+    public User save(User u) { return userRepository.save(u); }
+    public Optional<User> findById(Long id) { return userRepository.findById(id); }
+    public Optional<User> findByUsername(String username) { return userRepository.findByUsername(username); }
+    public List<User> findAll() { return userRepository.findAll(); }
+    public boolean existsByUsername(String username) { return userRepository.existsByUsername(username); }
+    public boolean existsByEmail(String email) { return userRepository.existsByEmail(email); }
+    public void deleteById(Long id) { userRepository.deleteById(id); }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
+    // --- Spring Security Metodu (Düzeltilmiş) ---
 
-    public Set<User> findAllUsers() {
-        return Set.copyOf(userRepository.findAll());
-    }
-
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
-    }
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
-
-
-    // loadUserByUsername → Spring Security login sırasında çağrılır.
-    //DB’den kullanıcı yoksa UsernameNotFoundException fırlatır.
+    /**
+     * Kullanıcı adı ile veritabanından kullanıcıyı yükler ve Spring Security için bir UserDetails nesnesi döndürür.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+
+        // 1. Entity'yi veritabanından çek
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        // 2. Entity'yi Spring Security'nin UserDetails nesnesine dönüştür (Adaptör Deseni)
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.getAuthorities() // User Entity sınıfınızda getAuthorities() metodu olmalıdır
+        );
     }
 }

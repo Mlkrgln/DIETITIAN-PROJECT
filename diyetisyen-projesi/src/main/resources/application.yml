@@ -1,16 +1,36 @@
+# application.yml dosyasının son hali
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/diyetisyen
     username: postgres
     password: mlke3627
+    driver-class-name: org.postgresql.Driver # Sürüm algılama sorunlarına karşı bunu açıkça belirtmek iyi olur.
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # Geliştirme için iyi
     show-sql: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect # PostgreSQL Diyalekti
+
+    # Open-in-view Uyarısını kapatmak için eklendi (Önerilen)
+    open-in-view: false
+
   main:
+    # Bu ayar, aynı tipte birden fazla bean tanımlandığında hangisini kullanacağını belirtmek için kullanılır.
+    # Güvenlik (Security) konfigürasyonu yaparken işe yarayabilir.
     allow-bean-definition-overriding: true
 
 server:
   port: 8081
 
+# JWT Ayarları
+app:
+  jwt:
+    # Güvenli bir ortamda saklanması gereken gizli anahtar
+    secret: verysecretkey1234567890
+
+    # Token geçerlilik süresi (milisaniye). 86400000 ms = 24 Saat.
+    exp-ms: 86400000

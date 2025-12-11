@@ -1,0 +1,26 @@
+package com.diyetisyen.auth;
+
+import com.diyetisyen.user.entity.Role;
+import com.diyetisyen.user.service.RoleService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class RoleSeeder implements CommandLineRunner {
+
+    private final RoleService roleService;
+
+    @Override
+    public void run(String... args) {
+        createRoleIfNotExists("ROLE_ADMIN");
+        createRoleIfNotExists("ROLE_CUSTOMER");
+        createRoleIfNotExists("ROLE_DIETITIAN");
+    }
+
+    private void createRoleIfNotExists(String roleName) {
+        roleService.findByName(roleName)
+                .orElseGet(() -> roleService.saveRole(new Role(null, roleName)));
+    }
+}

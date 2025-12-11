@@ -1,6 +1,7 @@
 package com.diyetisyen.customer.controller;
 
-import com.diyetisyen.customer.model.Customer;
+
+import com.diyetisyen.customer.entity.Customer;
 import com.diyetisyen.customer.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
 
