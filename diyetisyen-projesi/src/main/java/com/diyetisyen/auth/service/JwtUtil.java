@@ -1,22 +1,31 @@
 package com.diyetisyen.auth.service;
 
+import com.diyetisyen.user.entity.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
     private final String SECRET_KEY = "secretKey123456"; // Prod’da env variable önerilir
-    private final long EXPIRATION_MS = 1000 * 60 * 60 * 10; // 10 saat
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 saat
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(String username,  Set<Role> roles) {
+        String roleString = roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.joining(",")); // ROLE_USER,ROLE_ADMIN gibi
+
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .claim("roles", roleString)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
@@ -26,12 +35,14 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token).getBody().getSubject();
+        return extractAllClaims(token).getSubject();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
     }
 
     private boolean isTokenExpired(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token).getBody().getExpiration().before(new Date());
+        return extractAllClaims(token).getExpiration().before(new Date());
     }
 }

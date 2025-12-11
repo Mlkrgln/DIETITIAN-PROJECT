@@ -1,4 +1,4 @@
-package com.diyetisyen.auth.model;
+package com.diyetisyen.auth.model.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequest {
-    private String username;
-    private String password;
+public class AuthResponse {
+    private String token;
+
 }
