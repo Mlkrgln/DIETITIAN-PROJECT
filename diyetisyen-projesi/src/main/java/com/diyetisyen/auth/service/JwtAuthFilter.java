@@ -1,5 +1,6 @@
 package com.diyetisyen.auth.service;
 
+import com.diyetisyen.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +18,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final com.diyetisyen.user.service.UserService userService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, com.diyetisyen.user.service.UserService userService) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
     }
