@@ -16,5 +16,6 @@ spring:
 
 app:
   jwt:
-    secret: test-secret-key-test-secret-key
+    secret: testSecretKeytestSecretKeytestSecretKeytestSecretKey
     exp-ms: 3600000
+
