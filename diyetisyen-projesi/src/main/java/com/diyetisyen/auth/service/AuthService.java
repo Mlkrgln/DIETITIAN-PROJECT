@@ -36,18 +36,26 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
+        // 1. Kimlik doğrulama
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
         );
-        var user = (User) userService.loadUserByUsername(req.getUsername());
-        Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        // 2. loadUserByUsername yerine doğrudan findByUsername kullanın
+        // Böylece casting (ClassCastException) riskini tamamen ortadan kaldırırsınız.
+        User user = userService.findByUsername(req.getUsername())
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+
+        // 3. Token üretimi
+        Set<String> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
         String token = jwtUtil.generateToken(user.getUsername(), roles);
         return new AuthResponse(token);
     }
 
     public AuthResponse register(RegisterRequest req, String requestedRoleName) {
-        if (userService.existsByUsername(req.getUsername())) throw new RuntimeException("Username exists");
-        if (userService.existsByEmail(req.getEmail())) throw new RuntimeException("Email exists");
 
         Role role = roleService.findByName(requestedRoleName)
                 .orElseGet(() -> roleService.saveRole(Role.builder().name(requestedRoleName).build()));

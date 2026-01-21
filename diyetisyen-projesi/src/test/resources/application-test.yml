@@ -1,21 +1,27 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    # MODE=PostgreSQL kalsın ama DATABASE_TO_LOWER ayarına dikkat
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     driver-class-name: org.h2.Driver
     username: sa
     password:
 
   jpa:
+    # H2 Dialect kullanarak Hibernate'in hata yapmasını engelliyoruz
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-
-  h2:
-    console:
-      enabled: true
+    properties:
+      hibernate:
+        # H2'nin 'returning id' hatasını engelleyen kritik ayarlar:
+        use_get_generated_keys: true
+        jdbc:
+          insert_with_generated_keys: true
+        # Hibernate 6 için bazen şu dialect ayarı da gerekebilir:
+        dialect: org.hibernate.dialect.H2Dialect
 
 app:
   jwt:
-    secret: testSecretKeytestSecretKeytestSecretKeytestSecretKey
+    secret: "testSecretKeytestSecretKeytestSecretKeytestSecretKey"
     exp-ms: 3600000
-
