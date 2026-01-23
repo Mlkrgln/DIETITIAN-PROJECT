@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(callSuper = true) // <-- üst sınıf alanlarını da dahil ettik
 public class User extends BaseEntity implements UserDetails {
 
     @Id
@@ -55,3 +56,4 @@ public class User extends BaseEntity implements UserDetails {
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return true; }
 }
+

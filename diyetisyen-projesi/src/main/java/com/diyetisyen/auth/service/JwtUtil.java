@@ -13,15 +13,18 @@ import java.util.Set;
 @Component
 public class JwtUtil {
 
-    @Value("${app.jwt.secret}")
-    private String secret;
+    private final String secret;
+    private final long expMs;
 
-    @Value("${app.jwt.exp-ms}")
-    private long expMs;
+    public JwtUtil(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.exp-ms}") long expMs
+    ) {
+        this.secret = secret;
+        this.expMs = expMs;
+    }
 
-    // Secret Key oluşturma metodu (Güncel JJWT 0.12.x syntax'ı için kritik)
     private SecretKey getSigningKey() {
-        // Base64 kodlaması yerine, String secret'i byte dizisine çevirir.
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -35,7 +38,6 @@ public class JwtUtil {
                 .claim("roles", rolesStr)
                 .setIssuedAt(now)
                 .setExpiration(exp)
-                // Güncel syntax: setSigningKey yerine signWith ve SecretKey kullanımı
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -46,18 +48,15 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            // Token'ın süresinin dolup dolmadığını kontrol eder
             return !getClaims(token).getExpiration().before(new Date());
         } catch (Exception e) {
-            // Loglama yapılabilir, hata durumunda token geçersiz
             return false;
         }
     }
 
     private Claims getClaims(String token) {
-        // Güncel syntax: parserBuilder ve setSigningKey/build kullanımı
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey()) // SecretKey kullan
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
