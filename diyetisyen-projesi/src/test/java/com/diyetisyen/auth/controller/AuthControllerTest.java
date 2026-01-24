@@ -7,7 +7,7 @@ import com.diyetisyen.auth.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -99,4 +99,64 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isOk());
     }
+    @Test
+    void login_should_return_400_when_username_blank() throws Exception {
+
+        LoginRequest request = new LoginRequest();
+        request.setUsername("");
+        request.setPassword("123456");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void login_should_return_400_when_password_blank() throws Exception {
+
+        LoginRequest request = new LoginRequest();
+        request.setUsername("melike");
+        request.setPassword("");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void login_should_return_401_when_service_throws_exception() throws Exception {
+
+        when(authService.login(any()))
+                .thenThrow(new RuntimeException("Invalid credentials"));
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void user_should_not_access_admin_endpoint() throws Exception {
+
+        mockMvc.perform(post("/api/auth/register/admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void admin_should_access_admin_endpoint() throws Exception {
+
+        when(authService.register(any(), eq("ROLE_ADMIN")))
+                .thenReturn(new AuthResponse("token"));
+
+        mockMvc.perform(post("/api/auth/register/admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RegisterRequest())))
+                .andExpect(status().isOk());
+    }
+
 }
