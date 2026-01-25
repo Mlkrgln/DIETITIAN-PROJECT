@@ -4,6 +4,7 @@ import com.diyetisyen.auth.dto.AuthResponse;
 import com.diyetisyen.auth.dto.LoginRequest;
 import com.diyetisyen.auth.dto.RegisterRequest;
 import com.diyetisyen.auth.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +13,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     public AuthController(AuthService authService) { this.authService = authService; }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req) {
-        return ResponseEntity.ok(authService.login(req));
-    }
 
     // Public register for customers
     @PostMapping("/register/customer")
@@ -33,5 +29,14 @@ public class AuthController {
     @PostMapping("/register/admin")
     public ResponseEntity<AuthResponse> registerAdmin(@RequestBody RegisterRequest req) {
         return ResponseEntity.ok(authService.register(req, "ROLE_ADMIN"));
+    }
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 }

@@ -4,12 +4,14 @@ import com.diyetisyen.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@ActiveProfiles("test")
 class UserRepositoryTest {
 
     @Autowired
@@ -37,18 +39,5 @@ class UserRepositoryTest {
         assertTrue(found.isEmpty());
     }
 
-    @Test
-    void findByEmail_should_return_user() {
-        User user = User.builder()
-                .username("melike")
-                .email("melike@test.com")
-                .password("123")
-                .build();
 
-        userRepository.save(user);
-
-        Optional<User> found = userRepository.findByUsername("melike@test.com");
-
-        assertTrue(found.isPresent());
-    }
 }

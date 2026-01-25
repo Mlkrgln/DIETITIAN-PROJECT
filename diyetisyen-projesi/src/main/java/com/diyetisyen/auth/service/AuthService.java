@@ -72,4 +72,10 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getUsername(), roles);
         return new AuthResponse(token);
     }
+    // AuthService.java
+    public AuthResponse register(RegisterRequest request) {
+        // default role = CUSTOMER
+        return register(request, "ROLE_CUSTOMER");
+    }
+
 }

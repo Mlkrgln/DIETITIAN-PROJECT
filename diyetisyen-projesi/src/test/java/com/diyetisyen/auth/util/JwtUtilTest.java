@@ -2,11 +2,13 @@ package com.diyetisyen.auth.util;
 
 import com.diyetisyen.auth.service.JwtUtil;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 public class JwtUtilTest {
 
     @Test
