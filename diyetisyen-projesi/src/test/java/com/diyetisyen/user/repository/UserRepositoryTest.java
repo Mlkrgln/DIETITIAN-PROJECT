@@ -38,6 +38,4 @@ class UserRepositoryTest {
         Optional<User> found = userRepository.findByUsername("none");
         assertTrue(found.isEmpty());
     }
-
-
 }
