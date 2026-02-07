@@ -1,4 +1,4 @@
-package com.diyetisyen.dietlist.model.entity;
+package com.diyetisyen.dietlist.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,5 +1,9 @@
 package com.diyetisyen.integration;
 
+import com.diyetisyen.appointment.mapper.AppointmentMapper;
+import com.diyetisyen.appointment.repository.AppointmentRepository;
+import com.diyetisyen.auth.service.JwtUtil;
+import com.diyetisyen.config.TestSecurityConfig;
 import com.diyetisyen.user.entity.Role;
 import com.diyetisyen.user.entity.User;
 import com.diyetisyen.user.repository.RoleRepository;
@@ -9,18 +13,25 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestSecurityConfig.class)
 class AuthIntegrationTest {
 
     @Autowired
@@ -34,6 +45,19 @@ class AuthIntegrationTest {
 
     @Autowired
     RoleRepository roleRepository;
+
+    @MockBean
+    private AppointmentRepository appointmentRepository;
+
+    @MockBean
+    private AppointmentMapper appointmentMapper;
+
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
 
     @BeforeEach
     void setup() {
@@ -52,7 +76,19 @@ class AuthIntegrationTest {
                 .build();
 
         userRepository.save(user);
+
+
+        when(authenticationManager.authenticate(any()))
+                .thenReturn(
+                        new UsernamePasswordAuthenticationToken(
+                                "melike", null, Set.of()
+                        )
+                );
+
+        when(jwtUtil.generateToken(any(), any()))
+                .thenReturn("test-token");
     }
+
 
     @Test
     void register_admin_should_be_accessible_without_token() throws Exception {

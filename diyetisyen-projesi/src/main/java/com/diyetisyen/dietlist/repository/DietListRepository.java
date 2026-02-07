@@ -1,6 +1,6 @@
 package com.diyetisyen.dietlist.repository;
 
-import com.diyetisyen.dietlist.model.entity.DietList;
+import com.diyetisyen.dietlist.entity.DietList;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -10,10 +10,11 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: never
 
   main:
     allow-bean-definition-overriding: true
-app:
-  jwt:
-    secret: test-secret-key-test-secret-key-123456
-    exp-ms: 86400000
