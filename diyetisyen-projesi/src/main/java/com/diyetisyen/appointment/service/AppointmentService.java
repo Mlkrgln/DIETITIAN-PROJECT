@@ -8,6 +8,8 @@ public interface AppointmentService {
     AppointmentResponse create(AppointmentCreateRequest request);
 
     void cancel(Long id);
+    
+    void cancel(Long id, String reason);
 
     void complete(Long id);
 

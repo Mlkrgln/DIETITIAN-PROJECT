@@ -35,6 +35,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    public void cancel(Long id, String reason) {
+
+    }
+
+    @Override
     public void complete(Long id) {
         Appointment appointment = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Randevu bulunamadı"));
