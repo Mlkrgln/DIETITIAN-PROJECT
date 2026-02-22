@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,10 +30,12 @@ public class AppointmentServiceTest {
     @InjectMocks
     private AppointmentServiceImpl service;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @Test
     void shouldCancelAppointment() {
-        Appointment appointment =
-                new Appointment(LocalDateTime.now().plusDays(1));
+        Appointment appointment = Appointment.create(LocalDateTime.now().plusDays(1), null);
 
         when(repository.findById(1L)).thenReturn(Optional.of(appointment));
 

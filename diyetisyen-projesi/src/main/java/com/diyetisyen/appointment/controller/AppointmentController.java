@@ -3,6 +3,8 @@ package com.diyetisyen.appointment.controller;
 import com.diyetisyen.appointment.model.request.AppointmentCreateRequest;
 import com.diyetisyen.appointment.model.response.AppointmentResponse;
 import com.diyetisyen.appointment.service.AppointmentService;
+import com.diyetisyen.customer.entity.Customer;
+import com.diyetisyen.customer.repository.CustomerRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,17 +12,22 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/appointments")
 public class AppointmentController {
     private final AppointmentService appointmentService;
+    private final CustomerRepository customerRepository;
 
-    public AppointmentController(AppointmentService appointmentService) {
+    public AppointmentController(AppointmentService appointmentService, CustomerRepository customerRepository) {
         this.appointmentService = appointmentService;
+        this.customerRepository = customerRepository;
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public AppointmentResponse create(@RequestBody AppointmentCreateRequest request) {
-        return appointmentService.create(request);
-    }
+    public AppointmentResponse create(@RequestBody AppointmentCreateRequest request,
+                                      @RequestParam Long customerId) {
 
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer bulunamadı"));
+
+        return appointmentService.create(request, customer);
+    }
     @PostMapping("/{id}/cancel")
     public void cancel(@PathVariable Long id) {
         appointmentService.cancel(id);

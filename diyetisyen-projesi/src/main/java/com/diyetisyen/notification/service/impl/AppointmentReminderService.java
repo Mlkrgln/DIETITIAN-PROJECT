@@ -11,8 +11,8 @@ public class AppointmentReminderService {
     }
 
     public void remind(Appointment appointment) {
-        notificationSender.send(
-                new NotificationMessage("Randevunuz var")
-        );
+//        notificationSender.send(
+//                new NotificationMessage("Randevunuz var")
+//        );
     }
 }

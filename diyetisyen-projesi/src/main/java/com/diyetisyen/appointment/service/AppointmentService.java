@@ -2,10 +2,11 @@ package com.diyetisyen.appointment.service;
 
 import com.diyetisyen.appointment.model.request.AppointmentCreateRequest;
 import com.diyetisyen.appointment.model.response.AppointmentResponse;
+import com.diyetisyen.customer.entity.Customer;
 
 public interface AppointmentService {
 
-    AppointmentResponse create(AppointmentCreateRequest request);
+    AppointmentResponse create(AppointmentCreateRequest request, Customer customer);
 
     void cancel(Long id);
     
@@ -15,3 +16,4 @@ public interface AppointmentService {
 
     AppointmentResponse getById(Long id);
 }
+

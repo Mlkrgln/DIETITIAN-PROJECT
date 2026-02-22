@@ -3,39 +3,36 @@ package com.diyetisyen.user.repository;
 import com.diyetisyen.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
 
     @Test
-    void findByUsername_should_return_user() {
-        User user = User.builder()
-                .username("melike")
-                .email("melike@test.com")
-                .password("123")
-                .build();
-
-        userRepository.save(user);
-
-        Optional<User> found = userRepository.findByUsername("melike");
-
-        assertTrue(found.isPresent());
-        assertEquals("melike", found.get().getUsername());
+    void findByUsername_should_return_empty() {
+        Optional<User> user = userRepository.findByUsername("nonexistent");
+        assertTrue(user.isEmpty());
     }
 
     @Test
-    void findByUsername_should_return_empty() {
-        Optional<User> found = userRepository.findByUsername("none");
-        assertTrue(found.isEmpty());
+    void findByUsername_should_return_user() {
+        User u = new User();
+        u.setUsername("testuser");
+        u.setEmail("test@example.com");
+        u.setPassword("1234");
+        userRepository.save(u);
+
+        Optional<User> found = userRepository.findByUsername("testuser");
+        assertTrue(found.isPresent());
+        assertEquals("testuser", found.get().getUsername());
     }
 }

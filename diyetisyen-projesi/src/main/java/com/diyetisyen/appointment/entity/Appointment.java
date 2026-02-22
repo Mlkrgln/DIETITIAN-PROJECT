@@ -1,8 +1,7 @@
 package com.diyetisyen.appointment.entity;
 
+import com.diyetisyen.customer.entity.Customer;
 import jakarta.persistence.*;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,33 +13,43 @@ public class Appointment {
 
     private LocalDateTime appointmentDate;
 
-    @Getter
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 
-    protected Appointment() {
-    }
+    private String cancelReason;
 
-    public Appointment(LocalDateTime appointmentDate) {
+    // 🔹 Müşteri ilişkisi
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    protected Appointment() {}
+
+    public Appointment(LocalDateTime appointmentDate, Customer customer) {
         this.appointmentDate = appointmentDate;
+        this.customer = customer;
         this.status = AppointmentStatus.CREATED;
     }
 
-    public void cancel() {
-        if (status == AppointmentStatus.COMPLETED) {
-            throw new IllegalStateException("Tamamlanan randevu iptal edilemez");
-        }
+    // Factory method
+    public static Appointment create(LocalDateTime appointmentDate, Customer customer) {
         if (appointmentDate.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Geçmiş randevu iptal edilemez");
+            throw new IllegalArgumentException("Geçmiş tarihli randevu olamaz");
         }
+        return new Appointment(appointmentDate, customer);
+    }
+
+    // cancel / complete metodları aynen
+    public void cancel() { cancel(null); }
+    public void cancel(String reason) {
+        if (status == AppointmentStatus.COMPLETED) throw new IllegalStateException("Tamamlanan randevu iptal edilemez");
+        if (appointmentDate.isBefore(LocalDateTime.now())) throw new IllegalStateException("Geçmiş randevu iptal edilemez");
         this.status = AppointmentStatus.CANCELLED;
+        this.cancelReason = reason;
     }
+    public void complete() { if(status == AppointmentStatus.CANCELLED) throw new IllegalStateException("İptal edilen randevu tamamlanamaz"); status = AppointmentStatus.COMPLETED; }
 
-    public void complete() {
-        if (status == AppointmentStatus.CANCELLED) {
-            throw new IllegalStateException("İptal edilen randevu tamamlanamaz");
-        }
-        this.status = AppointmentStatus.COMPLETED;
-    }
-
+    public AppointmentStatus getStatus() { return status; }
+    public Long getId() { return id; }
+    public Customer getCustomer() { return customer; }
 }

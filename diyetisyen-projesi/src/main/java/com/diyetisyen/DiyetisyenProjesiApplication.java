@@ -5,10 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages = "com.diyetisyen")
-@EnableJpaRepositories(basePackages = "com.diyetisyen.user.repository") // Repository yolunu netleştir
-@EntityScan(basePackages = "com.diyetisyen.user.entity") // Entity yolunu netleştir
+@SpringBootApplication
+@EnableJpaRepositories(basePackages = "com.diyetisyen")
+@EntityScan(basePackages = "com.diyetisyen")
 public class DiyetisyenProjesiApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(DiyetisyenProjesiApplication.class, args);
 	}

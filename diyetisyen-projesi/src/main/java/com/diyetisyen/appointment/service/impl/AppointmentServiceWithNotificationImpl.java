@@ -5,6 +5,7 @@ import com.diyetisyen.appointment.model.request.AppointmentCreateRequest;
 import com.diyetisyen.appointment.model.response.AppointmentResponse;
 import com.diyetisyen.appointment.repository.AppointmentRepository;
 import com.diyetisyen.appointment.service.AppointmentService;
+import com.diyetisyen.customer.entity.Customer;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class AppointmentServiceWithNotificationImpl implements AppointmentServic
     }
 
     @Override
-    public AppointmentResponse create(AppointmentCreateRequest request) {
+    public AppointmentResponse create(AppointmentCreateRequest request, Customer customer) {
         return null;
     }
 

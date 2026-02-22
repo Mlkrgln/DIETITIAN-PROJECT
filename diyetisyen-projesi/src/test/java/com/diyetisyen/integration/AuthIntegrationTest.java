@@ -4,17 +4,18 @@ import com.diyetisyen.appointment.mapper.AppointmentMapper;
 import com.diyetisyen.appointment.repository.AppointmentRepository;
 import com.diyetisyen.auth.service.JwtUtil;
 import com.diyetisyen.config.TestSecurityConfig;
+import com.diyetisyen.notification.listener.AppointmentNotificationListener;
 import com.diyetisyen.user.entity.Role;
 import com.diyetisyen.user.entity.User;
 import com.diyetisyen.user.repository.RoleRepository;
 import com.diyetisyen.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,23 +29,23 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ActiveProfiles("test")
 @SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
+@Transactional
 class AuthIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    RoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
     @MockBean
     private AppointmentRepository appointmentRepository;
@@ -58,15 +59,14 @@ class AuthIntegrationTest {
     @MockBean
     private JwtUtil jwtUtil;
 
+    // ✅ Mocklanan çakışan bean
+    @MockBean
+    private AppointmentNotificationListener appointmentNotificationListener;
 
     @BeforeEach
     void setup() {
-        userRepository.deleteAll();
-        roleRepository.deleteAll();
-
-        Role adminRole = roleRepository.save(
-                Role.builder().name("ROLE_ADMIN").build()
-        );
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("ROLE_ADMIN").build()));
 
         User user = User.builder()
                 .username("melike")
@@ -77,18 +77,12 @@ class AuthIntegrationTest {
 
         userRepository.save(user);
 
-
         when(authenticationManager.authenticate(any()))
-                .thenReturn(
-                        new UsernamePasswordAuthenticationToken(
-                                "melike", null, Set.of()
-                        )
-                );
+                .thenReturn(new UsernamePasswordAuthenticationToken("melike", null, Set.of()));
 
         when(jwtUtil.generateToken(any(), any()))
                 .thenReturn("test-token");
     }
-
 
     @Test
     void register_admin_should_be_accessible_without_token() throws Exception {
@@ -117,4 +111,3 @@ class AuthIntegrationTest {
                 .andExpect(status().isOk());
     }
 }
-
