@@ -25,5 +25,6 @@ public class Customer {
     private String phone;
     private LocalDate birthDate;
     private String gender;
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

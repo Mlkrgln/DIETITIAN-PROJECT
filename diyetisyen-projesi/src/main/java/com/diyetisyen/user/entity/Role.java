@@ -11,9 +11,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Role extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(nullable = false, unique = true)
     private String name; // e.g. ROLE_CUSTOMER, ROLE_DIETITIAN, ROLE_ADMIN
