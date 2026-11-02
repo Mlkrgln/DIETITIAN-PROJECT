@@ -28,3 +28,9 @@
 /.idea
 /.idea
 /.idea
+
+# Local secrets and build outputs
+.env
+services/*/target/
+!services/pom.xml
+!services/*/pom.xml

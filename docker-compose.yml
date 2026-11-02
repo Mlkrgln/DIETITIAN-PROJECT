@@ -1,0 +1,214 @@
+services:
+  auth-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+    environment:
+      AUTH_DB_URL: jdbc:postgresql://auth-db:5432/auth_db
+      AUTH_DB_USERNAME: postgres
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in your environment or .env}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+
+  customer-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: customer_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${CUSTOMER_DB_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - customer-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d customer_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  customer-service:
+    build:
+      context: ./services/customer-service
+    environment:
+      CUSTOMER_DB_URL: jdbc:postgresql://customer-db:5432/customer_db
+      CUSTOMER_DB_USERNAME: postgres
+      CUSTOMER_DB_PASSWORD: ${CUSTOMER_DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in your environment or .env}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      customer-db:
+        condition: service_healthy
+
+  appointment-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: appointment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${APPOINTMENT_DB_PASSWORD:-postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - appointment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appointment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-dietitian}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-dietitian}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  appointment-service:
+    build:
+      context: ./services/appointment-service
+    environment:
+      APPOINTMENT_DB_URL: jdbc:postgresql://appointment-db:5432/appointment_db
+      APPOINTMENT_DB_USERNAME: postgres
+      APPOINTMENT_DB_PASSWORD: ${APPOINTMENT_DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in your environment or .env}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-dietitian}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-dietitian}
+      SERVER_PORT: 8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      appointment-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  diet-plan-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: diet_plan_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DIET_PLAN_DB_PASSWORD:-postgres}
+    ports:
+      - "5435:5432"
+    volumes:
+      - diet-plan-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d diet_plan_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  diet-plan-service:
+    build:
+      context: ./services/diet-plan-service
+    environment:
+      DIET_PLAN_DB_URL: jdbc:postgresql://diet-plan-db:5432/diet_plan_db
+      DIET_PLAN_DB_USERNAME: postgres
+      DIET_PLAN_DB_PASSWORD: ${DIET_PLAN_DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in your environment or .env}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      diet-plan-db:
+        condition: service_healthy
+
+  notification-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-postgres}
+    ports:
+      - "5436:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notification_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+    environment:
+      NOTIFICATION_DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      NOTIFICATION_DB_USERNAME: postgres
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-postgres}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-dietitian}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-dietitian}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@localhost}
+      SERVER_PORT: 8084
+    ports:
+      - "8084:8084"
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./fronted/diyetisyen-frontend
+      args:
+        VITE_AUTH_API_URL: ${VITE_AUTH_API_URL:-http://localhost:8080}
+        VITE_CUSTOMER_API_URL: ${VITE_CUSTOMER_API_URL:-http://localhost:8081}
+        VITE_APPOINTMENT_API_URL: ${VITE_APPOINTMENT_API_URL:-http://localhost:8082}
+        VITE_DIET_PLAN_API_URL: ${VITE_DIET_PLAN_API_URL:-http://localhost:8083}
+    ports:
+      - "3000:80"
+    depends_on:
+      - auth-service
+      - customer-service
+      - appointment-service
+      - diet-plan-service
+
+volumes:
+  auth-db-data:
+  customer-db-data:
+  appointment-db-data:
+  diet-plan-db-data:
+  notification-db-data:

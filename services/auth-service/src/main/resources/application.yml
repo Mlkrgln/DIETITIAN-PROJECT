@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${AUTH_DB_USERNAME:postgres}
+    password: ${AUTH_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: ${SHOW_SQL:false}
+server:
+  port: ${SERVER_PORT:8080}
+app:
+  web-origin: ${WEB_ORIGIN:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET}
+    exp-ms: ${JWT_EXP_MS:86400000}
+  bootstrap-admin:
+    username: ${BOOTSTRAP_ADMIN_USERNAME:}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}

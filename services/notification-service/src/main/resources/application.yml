@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: ${NOTIFICATION_DB_URL:jdbc:postgresql://localhost:5432/notification_db}
+    username: ${NOTIFICATION_DB_USERNAME:postgres}
+    password: ${NOTIFICATION_DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: ${SHOW_SQL:false}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+server:
+  port: ${SERVER_PORT:8084}
+app:
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    from: ${SMTP_FROM:no-reply@localhost}
+    retry-delay-ms: ${EMAIL_RETRY_DELAY_MS:30000}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
